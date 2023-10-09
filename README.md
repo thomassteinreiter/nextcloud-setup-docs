@@ -7,19 +7,19 @@ This is a work in progress and currently very, very incomplete.
 
 ## Introduction
 
-This is a documentation project for a Nextcloud setup. I invested a lot of time to get Nextcloud running the way I needed it to. I learned a lot on the way. This documentation contains the knowledge that is most helpful to me and most likely to others as well.
+This is a documentation project for a [Nextcloud](https://nextcloud.com) setup. I invested a lot of time to get Nextcloud running the way I needed it to. I learned a lot on the way. This documentation contains the knowledge that is most helpful to me and most likely to others as well.
 
 
 ## Basic Architecture and Technologies
 
-* Ubuntu Server
-* Apache HTTP Server (as Reverse-Proxy/Gateway)
-  * Let's encrypt SSL
-* Docker
-  * Nextcloud
-  * Redis
-  * MariaDB
-  * Elastic
+* [Ubuntu Server](https://ubuntu.com/download/server)
+* [Apache HTTP Server](https://httpd.apache.org/) (as Reverse-Proxy/Gateway)
+  * [Let's encrypt SSL](https://certbot.eff.org/instructions) (EFF certbot)
+* [Docker](https://www.docker.com/get-started/)
+  * [Nextcloud](https://hub.docker.com/_/nextcloud/)
+  * [Redis](https://hub.docker.com/_/redis)
+  * [MariaDB](https://hub.docker.com/_/mariadb)
+  * [Elastic](https://hub.docker.com/_/elasticsearch)
 
 
 ### Architecture Motivation
