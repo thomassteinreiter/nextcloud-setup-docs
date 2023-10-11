@@ -107,4 +107,25 @@ RewriteRule ^/\.well-known/caldav https://%{SERVER_NAME}/remote.php/dav/ [R=301,
 
 ## Docker Setup
 
-TODO
+## Install Docker Engine
+
+Since I want to use the latest Docker images and feature, I am not using Docker from the default ubuntu repository, but use the official Docker repository instead.
+
+https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository
+
+```
+# https://docs.docker.com/engine/install/ubuntu/#install-using-the-convenience-script
+# Not recommended for production systems
+curl -fsSL https://get.docker.com -o get-docker.sh
+sh ./get-docker.sh
+
+apt install docker-compose
+```
+
+## Install Docker Compose
+Docker Compose handles the downloading of Docker images, creating of containers, networks, volumes, starting and stopping of containers and so on. It is a very powerful tool that makes working with multiple Docker container that need to be connected together very easy. But since it can and will remove containers and volumes, it is very easy to accidentally delete all your data, be careful and always make backups before making changes on production systems.
+
+```
+apt install docker-compose
+```
+
