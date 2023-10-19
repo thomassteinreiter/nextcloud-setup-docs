@@ -1,0 +1,72 @@
+version: '3'
+
+volumes:
+  nextcloud_data:
+  nextcloud_db:
+  nextcloud_redis:
+  nextcloud_elastic_data:
+  nextcloud_elastic_backup:
+  nextcloud_elastic_logs:
+
+services:
+  db:
+    image: mariadb:11.1.2
+    restart: always
+    command: --log-bin=binlog --binlog-format=ROW
+    volumes:
+      - nextcloud_db:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=myMySQLRootPassword
+      - MYSQL_PASSWORD=mySqlPassword
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+
+  app:
+    build:
+      context: nc
+    image: custom-nextcloud:27.1.2-apache
+    container_name: nextcloud_app_1
+    restart: always
+    depends_on:
+      - db
+      - redis
+      #- elastic
+    ports:
+      - 11000:80
+    volumes:
+      - nextcloud_data:/var/www/html
+      - ./previews.config.php:/var/www/html/config/previews.config.php:ro
+      - ./remoteip.conf:/etc/apache2/conf-available/remoteip.conf:ro
+    environment:
+      - PHP_MEMORY_LIMIT=1024M
+      - NEXTCLOUD_TRUSTED_DOMAINS=localhost,myserver.mydomain.org
+      - TRUSTED_PROXIES="localhost 192.168.1.2"
+      - OVERWRITEHOST=myserver.mydomain.org
+      - OVERWRITEPROTOCOL=https
+      - MYSQL_PASSWORD=mySqlPassword
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+      - MYSQL_HOST=db
+      - REDIS_HOST=redis
+
+  redis:
+    image: redis:6.2.13
+    restart: always
+    command: ["--databases", "1"]
+    volumes:
+      - nextcloud_redis:/data
+
+  elastic:
+    build:
+      context: elastic
+    image: custom-elasticsearch:8.10.2
+    restart: always
+    volumes:
+      - nextcloud_elastic_data:/usr/share/elasticsearch/data
+      - nextcloud_elastic_backup:/usr/share/elasticsearch/backup
+      - nextcloud_elastic_logs:/usr/share/elasticsearch/logs
+    environment:
+      - "discovery.type=single-node"
+      - "xpack.security.enabled=false"
+      - "ES_JAVA_OPTS=-Xms2048m -Xmx2048m"
+

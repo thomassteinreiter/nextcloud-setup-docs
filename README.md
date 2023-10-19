@@ -107,7 +107,7 @@ RewriteRule ^/\.well-known/caldav https://%{SERVER_NAME}/remote.php/dav/ [R=301,
 
 ## Docker Setup
 
-## Install Docker Engine
+### Install Docker Engine
 
 Since I want to use the latest Docker images and feature, I am not using Docker from the default ubuntu repository, but use the official Docker repository instead.
 
@@ -122,10 +122,15 @@ sh ./get-docker.sh
 apt install docker-compose
 ```
 
-## Install Docker Compose
+### Install Docker Compose
 Docker Compose handles the downloading of Docker images, creating of containers, networks, volumes, starting and stopping of containers and so on. It is a very powerful tool that makes working with multiple Docker container that need to be connected together very easy. But since it can and will remove containers and volumes, it is very easy to accidentally delete all your data, be careful and always make backups before making changes on production systems.
 
 ```
 apt install docker-compose
 ```
 
+## Docker-Compose Setup
+
+see [docker-compose-files/nextcloud/](docker-compose-files/nextcloud/)
+
+TODO: explain the files in detail
