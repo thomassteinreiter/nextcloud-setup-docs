@@ -131,6 +131,127 @@ apt install docker-compose
 
 ## Docker-Compose Setup
 
-see [docker-compose-files/nextcloud/](docker-compose-files/nextcloud/)
+see [docker-compose-files/nextcloud/](docker-compose-files/nextcloud/) for the complete directory.
+
+
+### [docker-compose.yml](docker-compose-files/nextcloud/docker-compose.yml)
+
+#### database (db) section
+```
+...
+  db:
+    image: mariadb:11.1.2
+    restart: always
+    command: --log-bin=binlog --binlog-format=ROW
+    volumes:
+      - nextcloud_db:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=myMySQLRootPassword
+      - MYSQL_PASSWORD=mySqlPassword
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+...
+```
+
+The `command: --log-bin=binlog --binlog-format=ROW` command line arguments are required. see: https://docs.nextcloud.com/server/27/admin_manual/installation/system_requirements.html#database-requirements-for-mysql-mariadb
+
+#### nextcloud (app) section
+```
+  app:
+    build:
+      context: nc
+    image: custom-nextcloud:27.1.2-apache
+    container_name: nextcloud_app_1
+    restart: always
+    depends_on:
+      - db
+      - redis
+      - elastic
+    ports:
+      - 11000:80
+    volumes:
+      - nextcloud_data:/var/www/html
+      - ./previews.config.php:/var/www/html/config/previews.config.php:ro
+      - ./remoteip.conf:/etc/apache2/conf-available/remoteip.conf:ro
+    environment:
+      - PHP_MEMORY_LIMIT=1024M
+      - NEXTCLOUD_TRUSTED_DOMAINS=localhost,myserver.mydomain.org
+      - TRUSTED_PROXIES="localhost 192.168.1.2"
+      - OVERWRITEHOST=myserver.mydomain.org
+      - OVERWRITEPROTOCOL=https
+      - MYSQL_PASSWORD=mySqlPassword
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+      - MYSQL_HOST=db
+      - REDIS_HOST=redis
+```
+##### custom build
+this points to a Dockerfile in subdirectory [nc](docker-compose-files/nextcloud/nc)
+```
+    build:
+      context: nc
+    image: custom-nextcloud:27.1.2-apache
+    container_name: nextcloud_app_1
+```
+additionally, set the `image` and `container_name` name. Since this is a custom build, it is good to have a recognizable image name. (e.g. `docker ps`). There seems to be a inconsistency in Docker-Compose with the auto-naming of the container, depending if it is a "initial" start of the container or a "update" of a running container. e.g. `nextcloud_app_1` vs. `nextcloud-app-1`. This can be problematic if we want to run commands automatically that require the container name. (e.g. cron) To workaround this, we can explicitly set the `container_name`.
+
+##### increase memory
+The default PHP memory value is 512MB. I ran into issues with thumbnail generation for a hand full of larger images. Increasing to 1024MB (`- PHP_MEMORY_LIMIT=1024M`) fixed this for me.
+
+##### proxy config
+Nextcloud has a automatic system and security check here: `https://myserver.mydomain.org/settings/admin/overview` that complains about several problems in the beginning that come from running Nextcloud behind a reverse proxy. To get a proper setup, the following properties must be set:
+```
+      - NEXTCLOUD_TRUSTED_DOMAINS=localhost,myserver.mydomain.org
+      - TRUSTED_PROXIES="localhost 192.168.1.2"
+      - OVERWRITEHOST=myserver.mydomain.org
+      - OVERWRITEPROTOCOL=https
+```
+
+#### redis section
+```
+  redis:
+    image: redis:6.2.13
+    restart: always
+    command: ["--databases", "1"]
+    volumes:
+      - nextcloud_redis:/data
+```
+the one adjustment is `command: ["--databases", "1"]`. Redis has 16 databases per default to improve performance. Since I run this setup only a few users and the hardware is not very powerful, I setting this to the minimal amount to save resources.
+
+#### elastic section
+```
+  elastic:
+    build:
+      context: elastic
+    image: custom-elasticsearch:8.10.2
+    restart: always
+    volumes:
+      - nextcloud_elastic_data:/usr/share/elasticsearch/data
+      - nextcloud_elastic_backup:/usr/share/elasticsearch/backup
+      - nextcloud_elastic_logs:/usr/share/elasticsearch/logs
+    environment:
+      - "discovery.type=single-node"
+      - "xpack.security.enabled=false"
+      - "ES_JAVA_OPTS=-Xms2048m -Xmx2048m"
+```
+
+##### custom build
+this points to a Dockerfile in subdirectory [elastic](docker-compose-files/nextcloud/nc)
+```
+    build:
+      context: elastic
+    image: custom-elasticsearch:8.10.2
+```
+
+##### elastic setup
+```
+    environment:
+      - "discovery.type=single-node"
+      - "xpack.security.enabled=false"
+      - "ES_JAVA_OPTS=-Xms2048m -Xmx2048m"
+```
+We only need elastic on one node: `- "discovery.type=single-node"`. Since elastic version 8, authentication and other security featues are enabled per default, which complicates the setup. In my case, elastic runs inside an internal docker network (automatically created by docker-compose) so I can disable authentication to make the setup easier. The line `- "ES_JAVA_OPTS=-Xms2048m -Xmx2048m"` sets the max memory of elastic to 2 GiB
 
 TODO: explain the files in detail
+
+TODO: cron, thumbnailing,
