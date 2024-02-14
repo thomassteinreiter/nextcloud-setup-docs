@@ -66,6 +66,9 @@ AllowEncodedSlashes NoDecode
 # support slow/large uploads/downloads
 ProxyTimeout 3600
 
+# support large uploads via the sync clients
+SetEnv proxy-sendchunked 1
+
 # main reverse proxy rules
 ProxyPass "/"  "http://127.0.0.1:11000/" nocanon
 ProxyPassReverse "/"  "http://127.0.0.1:11000/"
