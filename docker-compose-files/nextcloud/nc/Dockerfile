@@ -1,4 +1,5 @@
-FROM nextcloud:27.1.2-apache
+ARG NEXTCLOUD_VERSION
+FROM nextcloud:${NEXTCLOUD_VERSION}-apache
 
 RUN set -ex; \
     apt-get update; \

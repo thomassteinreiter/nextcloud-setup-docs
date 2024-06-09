@@ -24,7 +24,9 @@ services:
   app:
     build:
       context: nc
-    image: custom-nextcloud:27.1.2-apache
+      args:
+        - NEXTCLOUD_VERSION=${NEXTCLOUD_VERSION}
+    image: custom-nextcloud:${NEXTCLOUD_VERSION}-apache
     container_name: nextcloud_app_1
     restart: always
     depends_on:
