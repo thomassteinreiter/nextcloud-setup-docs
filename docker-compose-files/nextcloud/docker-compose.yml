@@ -10,8 +10,9 @@ volumes:
 
 services:
   db:
-    image: mariadb:11.1.2
+    image: mariadb:${MARIADB_VERSION}
     restart: always
+    stop_grace_period: 5m
     command: --log-bin=binlog --binlog-format=ROW
     volumes:
       - nextcloud_db:/var/lib/mysql
@@ -29,6 +30,7 @@ services:
     image: custom-nextcloud:${NEXTCLOUD_VERSION}-apache
     container_name: nextcloud_app_1
     restart: always
+    stop_grace_period: 5m
     depends_on:
       - db
       - redis
@@ -61,8 +63,11 @@ services:
   elastic:
     build:
       context: elastic
-    image: custom-elasticsearch:8.10.2
+      args:
+        - ELASTIC_VERSION=${ELASTIC_VERSION}
+    image: custom-elasticsearch:${ELASTIC_VERSION}
     restart: always
+    stop_grace_period: 1m
     volumes:
       - nextcloud_elastic_data:/usr/share/elasticsearch/data
       - nextcloud_elastic_backup:/usr/share/elasticsearch/backup

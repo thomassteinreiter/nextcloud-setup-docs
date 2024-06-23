@@ -143,8 +143,9 @@ see [docker-compose-files/nextcloud/](docker-compose-files/nextcloud/) for the c
 ```
 ...
   db:
-    image: mariadb:11.1.2
+    image: mariadb:${MARIADB_VERSION}
     restart: always
+    stop_grace_period: 5m
     command: --log-bin=binlog --binlog-format=ROW
     volumes:
       - nextcloud_db:/var/lib/mysql
@@ -156,20 +157,23 @@ see [docker-compose-files/nextcloud/](docker-compose-files/nextcloud/) for the c
 ...
 ```
 
-The `command: --log-bin=binlog --binlog-format=ROW` command line arguments are required. see: https://docs.nextcloud.com/server/27/admin_manual/installation/system_requirements.html#database-requirements-for-mysql-mariadb
+The `command: --log-bin=binlog --binlog-format=ROW` command line arguments are required. see: https://docs.nextcloud.com/server/27/admin_manual/installation/system_requirements.html#database-requirements-for-mysql-mariadb. Note: `stop_grace_period` sets the time before the container is forcefully killed. (The default is insanely low (10s))
 
 #### nextcloud (app) section
 ```
   app:
     build:
       context: nc
-    image: custom-nextcloud:27.1.2-apache
+      args:
+        - NEXTCLOUD_VERSION=${NEXTCLOUD_VERSION}
+    image: custom-nextcloud:${NEXTCLOUD_VERSION}-apache
     container_name: nextcloud_app_1
     restart: always
+    stop_grace_period: 5m
     depends_on:
       - db
       - redis
-      - elastic
+      #- elastic
     ports:
       - 11000:80
     volumes:
@@ -226,8 +230,11 @@ the one adjustment is `command: ["--databases", "1"]`. Redis has 16 databases pe
   elastic:
     build:
       context: elastic
-    image: custom-elasticsearch:8.10.2
+      args:
+        - ELASTIC_VERSION=${ELASTIC_VERSION}
+    image: custom-elasticsearch:${ELASTIC_VERSION}
     restart: always
+    stop_grace_period: 1m
     volumes:
       - nextcloud_elastic_data:/usr/share/elasticsearch/data
       - nextcloud_elastic_backup:/usr/share/elasticsearch/backup
