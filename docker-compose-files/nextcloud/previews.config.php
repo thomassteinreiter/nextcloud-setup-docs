@@ -7,6 +7,7 @@ $CONFIG = [
         'OC\Preview\Movie',
         'OC\Preview\PNG',
         'OC\Preview\JPEG',
+        'OC\Preview\WEBP',
         'OC\Preview\Image',
         'OC\Preview\GIF',
         'OC\Preview\BMP',

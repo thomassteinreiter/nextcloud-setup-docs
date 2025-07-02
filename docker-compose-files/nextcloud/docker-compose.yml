@@ -1,5 +1,3 @@
-version: '3'
-
 volumes:
   nextcloud_data:
   nextcloud_db:
@@ -57,7 +55,7 @@ services:
       - REDIS_HOST=redis
 
   redis:
-    image: redis:6.2.14
+    image: redis:${REDIS_VERSION}
     restart: always
     stop_grace_period: 5m
     command: ["--databases", "1"]
@@ -65,11 +63,7 @@ services:
       - nextcloud_redis:/data
 
   elastic:
-    build:
-      context: elastic
-      args:
-        - ELASTIC_VERSION=${ELASTIC_VERSION}
-    image: custom-elasticsearch:${ELASTIC_VERSION}
+    image: elasticsearch:${ELASTIC_VERSION}
     restart: always
     stop_grace_period: 1m
     volumes:
