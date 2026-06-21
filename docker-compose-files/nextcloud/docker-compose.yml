@@ -40,6 +40,8 @@ services:
       - nextcloud_data:/var/www/html
       - ./previews.config.php:/var/www/html/config/previews.config.php:ro
       - ./remoteip.conf:/etc/apache2/conf-available/remoteip.conf:ro
+      - ./security.conf:/etc/apache2/conf-available/security.conf:ro
+      - ./php_security.ini:/usr/local/etc/php/conf.d/php_security.ini
     environment:
       - PHP_MEMORY_LIMIT=4096M
       - PHP_UPLOAD_LIMIT=2048M
